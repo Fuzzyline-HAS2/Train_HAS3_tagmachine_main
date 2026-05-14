@@ -1,5 +1,5 @@
  ;/**
- * @file updated_tagmachine_main.ino
+ * @file Train_HAS3_tagmachine_main.ino
  * @author 김병준 (you@domain.com)
  * @brief
  * @version 1.0
@@ -10,7 +10,7 @@
  */
 
 #define FIRMWARE_VER 13
-#include "updated_tagmachine_main.h"
+#include "Train_HAS3_tagmachine_main.h"
 
 void setup() {
     DebugSerial.begin(115200);

@@ -8,7 +8,19 @@
       "Bash(git push *)",
       "Bash(git remote *)",
       "Bash(git restore *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(git branch *)",
+      "Bash(findstr -i serial)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\ok\\\\updated_tagmachine_main\" -Recurse -Include \"*.ino\", \"*.h\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(git pull *)",
+      "Bash(git stash *)",
+      "Bash(git revert *)",
+      "Bash(git checkout *)",
+      "Bash(git mv *)",
+      "Bash(sed -i \"s/#ifndef _UPDATED_TAGMACHINE_MAIN_/#ifndef _TRAIN_HAS3_TAGMACHINE_MAIN_/\" Train_HAS3_tagmachine_main.h)",
+      "Bash(sed -i \"s/#define _UPDATED_TAGMACHINE_MAIN_/#define _TRAIN_HAS3_TAGMACHINE_MAIN_/\" Train_HAS3_tagmachine_main.h)",
+      "Bash(sed -i 's/#include \"updated_tagmachine_main.h\"/#include \"Train_HAS3_tagmachine_main.h\"/' Train_HAS3_tagmachine_main.ino)"
     ]
   }
 }
