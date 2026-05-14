@@ -7,6 +7,7 @@ void TimerInit(){
     // debuffTimerId = DebuffTimer.setInterval(1000,DebuffTimerFunc);
     // DebuffTimer.deleteTimer(debuffTimerId);
 }
+
 void TimerRun(){
     WifiTimer.run();
     GameTimer.run();
@@ -15,26 +16,21 @@ void TimerRun(){
     ApplyPendingDeviceState();
 }
 
-/**
- * @brief WIFI read 타이머 주기별로 받는 함수
- */
+// WiFi 상태 폴링 + 양쪽 Beetle 시리얼 수신을 2초 주기로 처리.
 void WifiIntervalFunc(){
     has2wifi.Loop(DataChanged);
     CommnunicationBeetle();         // Sub Beetle
     CommnunicationMainBeetle();     // Main Beetle
 }
 
-/**
- * @brief 다중 태그를 인식하기 위한 타이머 함수
- */
+// 1초 주기로 호출되어 ptrGameTimer(현재 진행 중인 타이머 함수)를 실행.
 void GameTimerFunc(){
     DebugSerial.println("GameTimer");
     if (ptrGameTimer != nullptr) ptrGameTimer();
 }
 
-/**
- * @brief 반대쪽 SUB 태그머신(Beetle)에서 데이터를 타이머 주기별로 받는 함수
- */
+// 두 번째 카드 태그 대기 타임아웃 처리.
+// SubSerialTimer가 만료되면 첫 번째 태그 후 두 번째 카드가 오지 않은 것으로 판단 → ptrRfidFail() 호출.
 void SubSerialTimerFunc(){
     SubSerialTimer.deleteTimer(subSerialTimerId);
     SubSerialTimerStart = false;
@@ -44,6 +40,8 @@ void SubSerialTimerFunc(){
     while(toMainSerial.available())
       toMainSerial.read();
 }
+
+// debuff 지속 시간(60초) 만료 시 자동으로 activate 복귀.
 void DebuffTimerFunc(){
     DebuffTimer.deleteTimer(debuffTimerId);
     DebugSerial.println("debuff time end");
@@ -51,6 +49,8 @@ void DebuffTimerFunc(){
     ReturnNormalState();
 }
 
+// 태그 진행을 완전히 취소하고 대기 상태로 돌아감.
+// ReturnNormalState()와의 차이: loginDone도 false로 초기화해 1단계 태그부터 다시 시작.
 void CancelTagProgress(){
     GameTimer.deleteTimer(gameTimerId);
     SubSerialTimer.deleteTimer(subSerialTimerId);
@@ -69,10 +69,10 @@ void CancelTagProgress(){
     ApplyPendingDeviceState();
 }
 
-/**
- * @brief 일반 상태로 돌아가는 함수
- */
-void ReturnNormalState(){           
+// 타이머/포인터를 초기화하고 태그 대기 상태로 복귀.
+// loginDone은 false로 초기화되어 다음 태그부터 1단계부터 다시 시작.
+// 게임이 정상 완료(성공/실패)된 뒤 항상 이 함수를 거쳐 복귀.
+void ReturnNormalState(){
     ptrRfidMain = CommnunicationMainBeetle;
     ptrRfidSub = CommnunicationBeetle;
     ptrRfidMode = Login;
@@ -80,31 +80,28 @@ void ReturnNormalState(){
     gameTimerCnt = 0;
 
     loginDone = false;
-    GameTimer.deleteTimer(gameTimerId); 
-    SubSerialTimer.deleteTimer(subSerialTimerId);   
-    WifiTimer.deleteTimer(wifiTimerId);                                          //게임 타이머 종료
-    wifiTimerId = WifiTimer.setInterval(2000,WifiIntervalFunc);
-    
+    GameTimer.deleteTimer(gameTimerId);
+    SubSerialTimer.deleteTimer(subSerialTimerId);
+    WifiTimer.deleteTimer(wifiTimerId);
+    wifiTimerId = WifiTimer.setInterval(2000,WifiIntervalFunc); // WiFi 타이머 재시작
+
     DebugSerial.println("Return Normal State");
-    SubSerialFlush();                                                               //시리얼 통신 버퍼 flush
-    MainSerialFlush();                                                              //Main Beetle 시리얼 버퍼 flush
+    SubSerialFlush();
+    MainSerialFlush();
 }
 
-/** 
- * @brief 잠기지 않은 도어를 플레이어가 도어가 잠금을 하기위한 함수
- */
+// activate 상태에서 생존자가 문을 잠그는 타이머.
 void PlayerLockTimerFunc(){
     gameTimerCnt++;
     RoundNeoToggle(GREEN,gameTimerCnt);
     LineNeoUp(GREEN, YELLOW, map(gameTimerCnt,0,playerLockTime,0,NumPixels[LINE]));
     DebugSerial.println(map(gameTimerCnt,0,playerLockTime,0,NumPixels[LINE]));
-    if(gameTimerCnt == 1)                                                         // 3번마다 "도어잠금 효과음" 나오게 하기
+    if(gameTimerCnt == 1)
         Mp3PlayLargeFolder(1, VD11);
     if(gameTimerCnt > (playerLockTime))
     {
         has2wifi.ReceiveMine();
         DataChanged();
-        // DebugSerial.println("strCurState:" + String(strCurState));
         if(strCurState != "activate"){
             DebugSerial.println("debuff on");
             CancelTagProgress();
@@ -119,11 +116,20 @@ void PlayerLockTimerFunc(){
             RoundNeoEffect(GREEN);
             SubSerialFlush();
             MainSerialFlush();
-        }                                                     //시리얼 통신 버퍼 flush
+        }
     }
 }
 
+// ── unlock 타이머 구조 ───────────────────────────────────────────────────────
+// 각 역할(생존자/술래/유령)마다 일반/뉴비 쌍이 존재.
+// 공통 구조: XxxUnlockTimerBody(onSuccess) → 매 틱 네오픽셀 업데이트 + 시간 만료 시
+//             debuff 감지 → CancelTagProgress()
+//             정상 완료  → onSuccess() 콜백 실행
+// 이 패턴 덕분에 타이머 바디 코드 중복 없이 일반/뉴비 성공 동작만 교체 가능.
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ── Player Unlock ────────────────────────────────────────────
+// 성공 시 문을 열고 activate 상태로 전환 (일반 모드).
 void PlayerUnlockSuccess() {
     DebugSerial.println("DOOR UNLOCK!");
     Mp3PlayLargeFolder(1, VD7);
@@ -137,6 +143,7 @@ void PlayerUnlockSuccess() {
     MainSerialFlush();
 }
 
+// 성공 시 문을 열었다 즉시 lock으로 복귀 (뉴비 모드).
 void NewbiePlayerSuccess() {
     DebugSerial.println("DOOR UNLOCK (Newbie Player)!");
     Mp3PlayLargeFolder(1, VD7);
@@ -160,6 +167,7 @@ void PlayerUnlockTimerFunc()       { PlayerUnlockTimerBody(PlayerUnlockSuccess);
 void NewbiePlayerUnlockTimerFunc() { PlayerUnlockTimerBody(NewbiePlayerSuccess); }
 
 // ── Tagger Unlock ─────────────────────────────────────────────
+// 성공 시 문을 열고 activate 상태로 전환 (일반 모드).
 void TaggerUnlockSuccess() {
     Mp3PlayLargeFolder(1, VD1);
     DebugSerial.println("DOOR UNLOCK!");
@@ -172,6 +180,8 @@ void TaggerUnlockSuccess() {
     MainSerialFlush();
 }
 
+// 성공 시 문을 열었다 즉시 lock으로 복귀 (뉴비 모드).
+// 일반 모드와 달리 DoorOpen() 대신 GhostDoorOpen() 후 직접 "lock" 전송.
 void NewbieTaggerSuccess() {
     Mp3PlayLargeFolder(1, VD1);
     DebugSerial.println("DOOR UNLOCK (Newbie)!");
@@ -191,6 +201,7 @@ void NewbieTaggerSuccess() {
 void TaggerUnlockTimerBody(void (*onSuccess)()) {
     gameTimerCnt++;
     RoundNeoToggle(PURPLE, gameTimerCnt);
+    // 3틱마다 침입 시도 효과음, 마지막 2틱 전까지만 재생(끝에서 짤리지 않도록)
     if (gameTimerCnt%3 == 1 && gameTimerCnt < (taggerUnlockTime - 2))
         Mp3PlayLargeFolder(1, VD10);
     LineNeoDown(PURPLE, GREEN, map(gameTimerCnt, 0, taggerUnlockTime, 0, NumPixels[LINE]));
@@ -206,6 +217,8 @@ void TaggerUnlockTimerFunc()       { TaggerUnlockTimerBody(TaggerUnlockSuccess);
 void NewbieTaggerUnlockTimerFunc() { TaggerUnlockTimerBody(NewbieTaggerSuccess); }
 
 // ── Ghost Unlock ──────────────────────────────────────────────
+// 성공 시 문을 열었다 즉시 lock으로 복귀 (일반/뉴비 모두 같은 사이클).
+// 유령은 일반 모드에서도 activate를 거치지 않고 lock으로 돌아오는 것이 원래 규칙.
 void GhostUnlockSuccess() {
     Mp3PlayLargeFolder(1, VD1);
     DebugSerial.println("GHOST OPEN");
@@ -225,7 +238,7 @@ void GhostUnlockSuccess() {
 void NewbieGhostSuccess() {
     DebugSerial.println("GHOST OPEN (Newbie)!");
     Mp3PlayLargeFolder(1, VD1);
-    NewbieGhostOpen();
+    NewbieGhostOpen(); // NewbieOpenBody(BLUE) 호출 — 내부에서 VD1을 한 번 더 재생함
 }
 
 void GhostUnlockTimerBody(void (*onSuccess)()) {
@@ -242,19 +255,15 @@ void GhostUnlockTimerBody(void (*onSuccess)()) {
 void GhostUnlockTimerFunc()       { GhostUnlockTimerBody(GhostUnlockSuccess); }
 void NewbieGhostUnlockTimerFunc() { GhostUnlockTimerBody(NewbieGhostSuccess); }
 
-/**
- * @brief 잠겨있지 않은 도어 유령이 잠금해제를 하기위한 함수
- */
-void GhostLockTimerFunc(){      
+// activate 상태에서 유령이 문을 잠그는 타이머.
+// GhostUnlockTimerFunc의 반대 방향(activate → lock).
+void GhostLockTimerFunc(){
     gameTimerCnt++;
-    // RoundNeoToggle(BLUE,gameTimerCnt);
-    // LineNeoUp(BLUE, YELLOW, map(gameTimerCnt,0,ghostOpenTime,0,NumPixels[LINE]));
     RoundNeoUp(BLUE, YELLOW, map(gameTimerCnt,0,ghostOpenTime,0,NumPixels[ROUND]/2));
     if(gameTimerCnt > (ghostOpenTime))
     {
         has2wifi.ReceiveMine();
         DataChanged();
-        // DebugSerial.println("strCurState:" + String(strCurState));
         if(strCurState != "activate"){
             DebugSerial.println("debuff on");
             CancelTagProgress();
@@ -272,7 +281,7 @@ void GhostLockTimerFunc(){
             SubSerialFlush();
             MainSerialFlush();
             delay(1000);
-            has2wifi.Loop(DataChanged); //LOCK -> ACTIVATE 바뀐것을 업데이트 받기 위함
+            has2wifi.Loop(DataChanged);
         }
     }
 }
