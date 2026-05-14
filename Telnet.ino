@@ -42,6 +42,7 @@ size_t TelnetDebugConsole::write(const uint8_t *buffer, size_t size) {
 void TelnetInit() {
   telnetServer.begin();
   telnetServer.setNoDelay(true);
+  DebugSerial.printf("MAC: %s\r\n", WiFi.macAddress().c_str());
   DebugSerial.print("Telnet ready: ");
   DebugSerial.print(WiFi.localIP());
   DebugSerial.println(":23");
