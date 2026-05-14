@@ -150,11 +150,11 @@ void NewbiePlayerSuccess() {
     NewbiePlayerOpen();
 }
 
-void PlayerUnlockTimerBody(void (*onSuccess)()) {
+void PlayerUnlockTimerBody(void (*onSuccess)(), bool withSound) {
     gameTimerCnt++;
     RoundNeoToggle(GREEN, gameTimerCnt);
     LineNeoDown(YELLOW, GREEN, map(gameTimerCnt, 0, playerUnlockTime, 0, NumPixels[LINE]));
-    if (gameTimerCnt == 1) Mp3PlayLargeFolder(1, VD11);
+    if (gameTimerCnt == 1 && withSound) Mp3PlayLargeFolder(1, VD11);
     if (gameTimerCnt > playerUnlockTime) {
         has2wifi.ReceiveMine();
         DataChanged();
@@ -163,8 +163,8 @@ void PlayerUnlockTimerBody(void (*onSuccess)()) {
     }
 }
 
-void PlayerUnlockTimerFunc()       { PlayerUnlockTimerBody(PlayerUnlockSuccess); }
-void NewbiePlayerUnlockTimerFunc() { PlayerUnlockTimerBody(NewbiePlayerSuccess); }
+void PlayerUnlockTimerFunc()       { PlayerUnlockTimerBody(PlayerUnlockSuccess, true);  }
+void NewbiePlayerUnlockTimerFunc() { PlayerUnlockTimerBody(NewbiePlayerSuccess, false); }
 
 // ── Tagger Unlock ─────────────────────────────────────────────
 // 성공 시 문을 열고 activate 상태로 전환 (일반 모드).
@@ -198,11 +198,11 @@ void NewbieTaggerSuccess() {
     has2wifi.Loop(DataChanged);
 }
 
-void TaggerUnlockTimerBody(void (*onSuccess)()) {
+void TaggerUnlockTimerBody(void (*onSuccess)(), bool withSound) {
     gameTimerCnt++;
     RoundNeoToggle(PURPLE, gameTimerCnt);
     // 3틱마다 침입 시도 효과음, 마지막 2틱 전까지만 재생(끝에서 짤리지 않도록)
-    if (gameTimerCnt%3 == 1 && gameTimerCnt < (taggerUnlockTime - 2))
+    if (withSound && gameTimerCnt%3 == 1 && gameTimerCnt < (taggerUnlockTime - 2))
         Mp3PlayLargeFolder(1, VD10);
     LineNeoDown(PURPLE, GREEN, map(gameTimerCnt, 0, taggerUnlockTime, 0, NumPixels[LINE]));
     if (gameTimerCnt > taggerUnlockTime) {
@@ -213,8 +213,8 @@ void TaggerUnlockTimerBody(void (*onSuccess)()) {
     }
 }
 
-void TaggerUnlockTimerFunc()       { TaggerUnlockTimerBody(TaggerUnlockSuccess); }
-void NewbieTaggerUnlockTimerFunc() { TaggerUnlockTimerBody(NewbieTaggerSuccess); }
+void TaggerUnlockTimerFunc()       { TaggerUnlockTimerBody(TaggerUnlockSuccess, true);  }
+void NewbieTaggerUnlockTimerFunc() { TaggerUnlockTimerBody(NewbieTaggerSuccess, false); }
 
 // ── Ghost Unlock ──────────────────────────────────────────────
 // 성공 시 문을 열었다 즉시 lock으로 복귀 (일반/뉴비 모두 같은 사이클).
