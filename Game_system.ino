@@ -26,13 +26,13 @@ void GhostDoorOpen(){
 
 // ======================== NEWBIE MODE ========================
 
-void NewbiePlayerOpen() {
+void NewbieOpenBody(int neoColor) {
     ReturnNormalState();
-    ptrRfidMode = NewbieLogin;
+    ptrRfidMode = Login;
     Mp3PlayLargeFolder(1, VD1);
     digitalWrite(RELAY_PIN, HIGH);
     has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
-    RoundNeoEffect(GREEN);
+    RoundNeoEffect(neoColor);
     GhostDoorOpen();
     has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
     AllNeoOn(GREEN);
@@ -42,59 +42,7 @@ void NewbiePlayerOpen() {
     has2wifi.Loop(DataChanged);
 }
 
-void NewbieGhostOpen() {
-    ReturnNormalState();
-    ptrRfidMode = NewbieLogin;
-    Mp3PlayLargeFolder(1, VD1);
-    digitalWrite(RELAY_PIN, HIGH);
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
-    RoundNeoEffect(BLUE);
-    GhostDoorOpen();
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
-    AllNeoOn(GREEN);
-    SubSerialFlush();
-    MainSerialFlush();
-    delay(1000);
-    has2wifi.Loop(DataChanged);
-}
+void NewbiePlayerOpen() { NewbieOpenBody(GREEN); }
+void NewbieGhostOpen()  { NewbieOpenBody(BLUE);  }
 
-void NewbieLogin(char role) {
-    Login(role);
-}
 
-void NewbiePlayerUnlockTimerFunc() {
-    gameTimerCnt++;
-    RoundNeoToggle(GREEN, gameTimerCnt);
-    LineNeoDown(YELLOW, GREEN, map(gameTimerCnt, 0, playerUnlockTime, 0, NumPixels[LINE]));
-    if (gameTimerCnt == 1)
-        Mp3PlayLargeFolder(1, VD11);
-    if (gameTimerCnt > playerUnlockTime) {
-        has2wifi.ReceiveMine();
-        DataChanged();
-        if (strCurState != "lock") {
-            DebugSerial.println("debuff on");
-            CancelTagProgress();
-        } else {
-            DebugSerial.println("DOOR UNLOCK (Newbie Player)!");
-            Mp3PlayLargeFolder(1, VD7);
-            NewbiePlayerOpen();
-        }
-    }
-}
-
-void NewbieGhostUnlockTimerFunc() {
-    gameTimerCnt++;
-    RoundNeoUp(BLUE, GREEN, map(gameTimerCnt, 0, ghostOpenTime, 0, NumPixels[ROUND] / 2));
-    if (gameTimerCnt > ghostOpenTime) {
-        has2wifi.ReceiveMine();
-        DataChanged();
-        if (strCurState != "lock") {
-            DebugSerial.println("debuff on");
-            CancelTagProgress();
-        } else {
-            DebugSerial.println("GHOST OPEN (Newbie)!");
-            Mp3PlayLargeFolder(1, VD1);
-            NewbieGhostOpen();
-        }
-    }
-}

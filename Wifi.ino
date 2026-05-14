@@ -158,6 +158,6 @@ void GameSetting(){
 void NewbieModeSetting() {
     if ((String)(const char*)my["mode"] == "easy" &&
         (String)(const char*)my["game_state"] == "activate") {
-        ptrRfidMode = NewbieLogin;
+        ptrRfidMode = Login;
     }
 }

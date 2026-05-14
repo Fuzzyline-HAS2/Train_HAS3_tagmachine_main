@@ -70,13 +70,24 @@ volatile int taggerUnlockTime = 15;
 volatile int ghostOpenTime = 15;
 void WhichTagged();
 void DoorOpen();
-void NewbiePlayerOpenFunc();
-void NewbieGhostOpenFunc();
-void NewbieLogin(char role);
+void NewbieOpenBody(int neoColor);
 void NewbiePlayerOpen();
 void NewbieGhostOpen();
 void NewbieModeSetting();
+void PlayerUnlockSuccess();
+void NewbiePlayerSuccess();
+void PlayerUnlockTimerBody(void (*onSuccess)());
+void PlayerUnlockTimerFunc();
 void NewbiePlayerUnlockTimerFunc();
+void TaggerUnlockSuccess();
+void NewbieTaggerSuccess();
+void TaggerUnlockTimerBody(void (*onSuccess)());
+void TaggerUnlockTimerFunc();
+void NewbieTaggerUnlockTimerFunc();
+void GhostUnlockSuccess();
+void NewbieGhostSuccess();
+void GhostUnlockTimerBody(void (*onSuccess)());
+void GhostUnlockTimerFunc();
 void NewbieGhostUnlockTimerFunc();
 
 String strCurState = "";
@@ -180,6 +191,7 @@ void Login(char role);
 void LoginTimerSelector(char role);
 void LockFail();
 void UnlockFail();
+void NewbieUnlockFail();
 void WaitRfid(char role);
 
 bool loginDone = false; // 처음 로그인 하면 true로 바뀌어서 wifi 안쓰게하기위함

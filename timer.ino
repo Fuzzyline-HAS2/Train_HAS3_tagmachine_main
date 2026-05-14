@@ -123,144 +123,124 @@ void PlayerLockTimerFunc(){
     }
 }
 
-/**
- * @brief 잠겨있는 도어를 플레이어가 잠금해제를 하기위한 함수
- */
-void PlayerUnlockTimerFunc(){       
+// ── Player Unlock ────────────────────────────────────────────
+void PlayerUnlockSuccess() {
+    DebugSerial.println("DOOR UNLOCK!");
+    Mp3PlayLargeFolder(1, VD7);
+    ReturnNormalState();
+    digitalWrite(RELAY_PIN, HIGH);
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    RoundNeoEffect(YELLOW);
+    DoorOpen();
+    has2wifi.ReceiveMine();
+    SubSerialFlush();
+    MainSerialFlush();
+}
+
+void NewbiePlayerSuccess() {
+    DebugSerial.println("DOOR UNLOCK (Newbie Player)!");
+    Mp3PlayLargeFolder(1, VD7);
+    NewbiePlayerOpen();
+}
+
+void PlayerUnlockTimerBody(void (*onSuccess)()) {
     gameTimerCnt++;
-    RoundNeoToggle(GREEN,gameTimerCnt);
-    LineNeoDown(YELLOW, GREEN, map(gameTimerCnt,0,playerUnlockTime,0,NumPixels[LINE]));
-    if(gameTimerCnt == 1)                                                         // 3번마다 "도어잠금 효과음" 나오게 하기
-        Mp3PlayLargeFolder(1, VD11);
-    if(gameTimerCnt > (playerUnlockTime))
-    {
+    RoundNeoToggle(GREEN, gameTimerCnt);
+    LineNeoDown(YELLOW, GREEN, map(gameTimerCnt, 0, playerUnlockTime, 0, NumPixels[LINE]));
+    if (gameTimerCnt == 1) Mp3PlayLargeFolder(1, VD11);
+    if (gameTimerCnt > playerUnlockTime) {
         has2wifi.ReceiveMine();
         DataChanged();
-        // DebugSerial.println("strCurState:" + String(strCurState));
-        if(strCurState != "lock"){
-            DebugSerial.println("debuff on");
-            CancelTagProgress();
-        }
-        else {
-            DebugSerial.println("DOOR UNLOCK!");
-            Mp3PlayLargeFolder(1, VD7);
-            ReturnNormalState();
-            digitalWrite(RELAY_PIN, HIGH);
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
-            RoundNeoEffect(YELLOW);
-            DoorOpen();
-            has2wifi.ReceiveMine();
-            SubSerialFlush();
-            MainSerialFlush();
-        }                                                       //시리얼 통신 버퍼 flush
+        if (strCurState != "lock") { DebugSerial.println("debuff on"); CancelTagProgress(); }
+        else { onSuccess(); }
     }
 }
 
-/**
- * @brief 잠겨있는 도어를 술래가 잠금해제를 하기위한 함수
- */
-void TaggerUnlockTimerFunc(){
-    gameTimerCnt++;
-    RoundNeoToggle(PURPLE,gameTimerCnt);
-    if(gameTimerCnt%3 == 1)                                                         // 3번마다 "술래 침입시도" 나오게 하기
-        if(gameTimerCnt < (taggerUnlockTime - 2))                                   // 마지막에는 효과음 안나오게 해서 짤리지 않게 하는 함수
-            Mp3PlayLargeFolder(1, VD10);
-    LineNeoDown(PURPLE, GREEN, map(gameTimerCnt,0,taggerUnlockTime,0,NumPixels[LINE]));
-    if(gameTimerCnt > (taggerUnlockTime))
-    {
-        has2wifi.ReceiveMine();
-        DataChanged();
-        // DebugSerial.println("strCurState:" + String(strCurState));
-        if(strCurState != "lock"){
-            DebugSerial.println("debuff on");
-            CancelTagProgress();
-        }
-        else {
-            Mp3PlayLargeFolder(1, VD1);
-            DebugSerial.println("DOOR UNLOCK!");
-            ReturnNormalState();
-            digitalWrite(RELAY_PIN, HIGH); 
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
-            RoundNeoEffect(PURPLE);
-            DoorOpen();
-            SubSerialFlush();
-            MainSerialFlush();
-        }                                                          //시리얼 통신 버퍼 flush
-    }
+void PlayerUnlockTimerFunc()       { PlayerUnlockTimerBody(PlayerUnlockSuccess); }
+void NewbiePlayerUnlockTimerFunc() { PlayerUnlockTimerBody(NewbiePlayerSuccess); }
+
+// ── Tagger Unlock ─────────────────────────────────────────────
+void TaggerUnlockSuccess() {
+    Mp3PlayLargeFolder(1, VD1);
+    DebugSerial.println("DOOR UNLOCK!");
+    ReturnNormalState();
+    digitalWrite(RELAY_PIN, HIGH);
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    RoundNeoEffect(PURPLE);
+    DoorOpen();
+    SubSerialFlush();
+    MainSerialFlush();
 }
 
-/**
- * @brief 잠겨있는 도어를 유령이 잠금해제를 하기위한 함수
- */
-void GhostUnlockTimerFunc(){                                                
-    gameTimerCnt++;
-    // RoundNeoToggle(BLUE,gameTimerCnt);
-    // LineNeoDown(BLUE, GREEN, map(gameTimerCnt,0,ghostOpenTime,0,NumPixels[LINE]));
-    RoundNeoUp(BLUE, GREEN, map(gameTimerCnt,0,ghostOpenTime,0,NumPixels[ROUND]/2));
-    if(gameTimerCnt > (ghostOpenTime))
-    {
-        has2wifi.ReceiveMine();
-        DataChanged();
-        // DebugSerial.println("strCurState:" + String(strCurState));
-        if(strCurState != "lock"){
-            DebugSerial.println("debuff on");
-            CancelTagProgress();
-        }
-        else{
-            Mp3PlayLargeFolder(1, VD1);
-            DebugSerial.println("GHOST OPEN");
-            ReturnNormalState();
-            digitalWrite(RELAY_PIN, HIGH);
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
-            RoundNeoEffect(BLUE);
-            GhostDoorOpen();
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
-            AllNeoOn(GREEN);
-            SubSerialFlush();
-            MainSerialFlush();
-            delay(1000);
-            has2wifi.Loop(DataChanged); //LOCK -> ACTIVATE 바뀐것을 업데이트 받기 위함
-        }
-    }
-
+void NewbieTaggerSuccess() {
+    Mp3PlayLargeFolder(1, VD1);
+    DebugSerial.println("DOOR UNLOCK (Newbie)!");
+    ReturnNormalState();
+    digitalWrite(RELAY_PIN, HIGH);
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    RoundNeoEffect(PURPLE);
+    GhostDoorOpen();
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
+    AllNeoOn(GREEN);
+    SubSerialFlush();
+    MainSerialFlush();
+    delay(1000);
+    has2wifi.Loop(DataChanged);
 }
 
-/**
- * @brief 뉴비모드: 술래가 잠금해제 후 lock 상태로 복귀
- */
-void NewbieTaggerUnlockTimerFunc(){
+void TaggerUnlockTimerBody(void (*onSuccess)()) {
     gameTimerCnt++;
     RoundNeoToggle(PURPLE, gameTimerCnt);
-    if(gameTimerCnt%3 == 1)
-        if(gameTimerCnt < (taggerUnlockTime - 2))
-            Mp3PlayLargeFolder(1, VD10);
+    if (gameTimerCnt%3 == 1 && gameTimerCnt < (taggerUnlockTime - 2))
+        Mp3PlayLargeFolder(1, VD10);
     LineNeoDown(PURPLE, GREEN, map(gameTimerCnt, 0, taggerUnlockTime, 0, NumPixels[LINE]));
-    if(gameTimerCnt > (taggerUnlockTime))
-    {
+    if (gameTimerCnt > taggerUnlockTime) {
         has2wifi.ReceiveMine();
         DataChanged();
-        if(strCurState != "lock"){
-            DebugSerial.println("debuff on");
-            CancelTagProgress();
-        }
-        else {
-            Mp3PlayLargeFolder(1, VD1);
-            DebugSerial.println("DOOR UNLOCK (Newbie)!");
-            ReturnNormalState();
-            ptrRfidMode = NewbieLogin;
-            digitalWrite(RELAY_PIN, HIGH);
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
-            RoundNeoEffect(PURPLE);
-            GhostDoorOpen();
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
-            AllNeoOn(GREEN);
-            SubSerialFlush();
-            MainSerialFlush();
-            delay(1000);
-            has2wifi.Loop(DataChanged);
-        }
+        if (strCurState != "lock") { DebugSerial.println("debuff on"); CancelTagProgress(); }
+        else { onSuccess(); }
     }
 }
+
+void TaggerUnlockTimerFunc()       { TaggerUnlockTimerBody(TaggerUnlockSuccess); }
+void NewbieTaggerUnlockTimerFunc() { TaggerUnlockTimerBody(NewbieTaggerSuccess); }
+
+// ── Ghost Unlock ──────────────────────────────────────────────
+void GhostUnlockSuccess() {
+    Mp3PlayLargeFolder(1, VD1);
+    DebugSerial.println("GHOST OPEN");
+    ReturnNormalState();
+    digitalWrite(RELAY_PIN, HIGH);
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    RoundNeoEffect(BLUE);
+    GhostDoorOpen();
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
+    AllNeoOn(GREEN);
+    SubSerialFlush();
+    MainSerialFlush();
+    delay(1000);
+    has2wifi.Loop(DataChanged);
+}
+
+void NewbieGhostSuccess() {
+    DebugSerial.println("GHOST OPEN (Newbie)!");
+    Mp3PlayLargeFolder(1, VD1);
+    NewbieGhostOpen();
+}
+
+void GhostUnlockTimerBody(void (*onSuccess)()) {
+    gameTimerCnt++;
+    RoundNeoUp(BLUE, GREEN, map(gameTimerCnt, 0, ghostOpenTime, 0, NumPixels[ROUND]/2));
+    if (gameTimerCnt > ghostOpenTime) {
+        has2wifi.ReceiveMine();
+        DataChanged();
+        if (strCurState != "lock") { DebugSerial.println("debuff on"); CancelTagProgress(); }
+        else { onSuccess(); }
+    }
+}
+
+void GhostUnlockTimerFunc()       { GhostUnlockTimerBody(GhostUnlockSuccess); }
+void NewbieGhostUnlockTimerFunc() { GhostUnlockTimerBody(NewbieGhostSuccess); }
 
 /**
  * @brief 잠겨있지 않은 도어 유령이 잠금해제를 하기위한 함수

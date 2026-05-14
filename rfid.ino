@@ -67,19 +67,21 @@ void Login(char role) {
 void WaitRfid(char role) { DebugSerial.println("WAIT RFID"); }
 void LoginTimerSelector(char role) {
   DebugSerial.println("LoginTimerSelector");
+  bool isNewbie = ((String)(const char*)my["mode"] == "easy" &&
+                   (String)(const char*)my["device_state"] == "lock");
   if ((String)(const char *)my["device_state"] == "lock") {
     if (role == 'P') {
-      ptrGameTimer = PlayerUnlockTimerFunc;
-      ptrRfidFail = UnlockFail;
-      ptrRfidMode = WaitRfid;
+      ptrGameTimer = isNewbie ? NewbiePlayerUnlockTimerFunc : PlayerUnlockTimerFunc;
+      ptrRfidFail  = isNewbie ? NewbieUnlockFail : UnlockFail;
+      ptrRfidMode  = WaitRfid;
     } else if (role == 'G') {
-      ptrGameTimer = GhostUnlockTimerFunc;
-      ptrRfidFail = GhostOpenFailLock;
-      ptrRfidMode = WaitRfid;
+      ptrGameTimer = isNewbie ? NewbieGhostUnlockTimerFunc : GhostUnlockTimerFunc;
+      ptrRfidFail  = GhostOpenFailLock;
+      ptrRfidMode  = WaitRfid;
     } else if (role == 'T') {
-      ptrGameTimer = TaggerUnlockTimerFunc;
-      ptrRfidFail = UnlockFail;
-      ptrRfidMode = WaitRfid;
+      ptrGameTimer = isNewbie ? NewbieTaggerUnlockTimerFunc : TaggerUnlockTimerFunc;
+      ptrRfidFail  = isNewbie ? NewbieTaggerFail : UnlockFail;
+      ptrRfidMode  = WaitRfid;
     }
   } else if ((String)(const char *)my["device_state"] == "debuff") {
     AllNeoOn(PURPLE);
@@ -95,49 +97,33 @@ void LoginTimerSelector(char role) {
       Mp3PlayLargeFolder(1, VD1);
       DebugSerial.println("Tagger Door Open");
       digitalWrite(RELAY_PIN, HIGH);
-
       RoundNeoEffect(PURPLE);
       AllNeoOn(PURPLE);
       RoundNeoEffectDown(BLACK);
       DoorOpen();
-      ReturnNormalState(); // 시리얼 통신 버퍼 flush
+      ReturnNormalState();
       AllNeoOn(PURPLE);
     }
-  } else // 도어 UNLOCK 일때
-  {
+  } else {
     if (role == 'P') {
       DebugSerial.println("LoginTimerSelector PlayerSelected");
       ptrGameTimer = PlayerLockTimerFunc;
-      ptrRfidFail = LockFail;
-      ptrRfidMode = WaitRfid;
+      ptrRfidFail  = LockFail;
+      ptrRfidMode  = WaitRfid;
     } else if (role == 'G') {
       ptrGameTimer = GhostLockTimerFunc;
-      ptrRfidFail = GhostOpenFailUnlock;
-      ptrRfidMode = WaitRfid;
+      ptrRfidFail  = GhostOpenFailUnlock;
+      ptrRfidMode  = WaitRfid;
     } else if (role == 'T') {
       Mp3PlayLargeFolder(1, VD1);
       DebugSerial.println("Tagger Door Open");
       digitalWrite(RELAY_PIN, HIGH);
-      has2wifi.Send((String)(const char *)my["device_name"], "device_state",
-                    "open");
+      has2wifi.Send((String)(const char *)my["device_name"], "device_state", "open");
       RoundNeoEffect(PURPLE);
       AllNeoOn(PURPLE);
       DoorOpen();
       AllNeoOn(YELLOW);
       ReturnNormalState();
-    }
-  }
-  if ((String)(const char*)my["mode"] == "easy" &&
-      (String)(const char*)my["device_state"] == "lock") {
-    if (role == 'P') {
-      ptrGameTimer = NewbiePlayerUnlockTimerFunc;
-      ptrRfidFail = UnlockFail;
-    } else if (role == 'G') {
-      ptrGameTimer = NewbieGhostUnlockTimerFunc;
-      ptrRfidFail = GhostOpenFailLock;
-    } else if (role == 'T') {
-      ptrGameTimer = NewbieTaggerUnlockTimerFunc;
-      ptrRfidFail = NewbieTaggerFail;
     }
   }
 }
@@ -153,7 +139,7 @@ void NewbieTaggerFail() {
     NeoBlink(ROUND, RED, 5, 500);
     AllNeoOn(GREEN);
     ReturnNormalState();
-    ptrRfidMode = NewbieLogin;
+    ptrRfidMode = Login;
   }
 }
 void LockFail() {
@@ -185,6 +171,21 @@ void UnlockFail() {
   } else {
     Mp3PlayLargeFolder(1, VD6);
     DebugSerial.println("Unlock Fail Door Shut");
+    NeoBlink(ROUND, RED, 5, 500);
+    AllNeoOn(GREEN);
+    ReturnNormalState();
+  }
+}
+
+void NewbieUnlockFail() {
+  has2wifi.ReceiveMine();
+  DataChanged();
+  if (strCurState != "lock") {
+    DebugSerial.println("debuff on");
+    CancelTagProgress();
+  } else {
+    Mp3PlayLargeFolder(1, VD6);
+    DebugSerial.println("Unlock Fail Door Shut (Newbie)");
     NeoBlink(ROUND, RED, 5, 500);
     AllNeoOn(GREEN);
     ReturnNormalState();
