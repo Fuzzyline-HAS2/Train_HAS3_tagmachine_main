@@ -214,7 +214,7 @@ void TaggerUnlockTimerBody(void (*onSuccess)(), bool withSound) {
 }
 
 void TaggerUnlockTimerFunc()       { TaggerUnlockTimerBody(TaggerUnlockSuccess, true);  }
-void NewbieTaggerUnlockTimerFunc() { TaggerUnlockTimerBody(NewbieTaggerSuccess, false); }
+void NewbieTaggerUnlockTimerFunc() { TaggerUnlockTimerBody(NewbieTaggerSuccess, true); }
 
 // ── Ghost Unlock ──────────────────────────────────────────────
 // 성공 시 문을 열었다 즉시 lock으로 복귀 (일반/뉴비 모두 같은 사이클).
