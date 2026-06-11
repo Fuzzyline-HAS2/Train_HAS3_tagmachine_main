@@ -110,6 +110,11 @@ void SettingFunc(void){
     ptrCurrentMode = WaitFunc;
     ptrRfidMode = WaitRfid;
     GameSetting();
+    has2wifi.Send((String)(const char*)my["device_name"], "game_state", "activate");
+    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "activate");
+    my["game_state"] = "activate";
+    my["device_state"] = "activate";
+    ActivateFunc();
 }
 void ActivateFunc(void){
     DebugSerial.println("ACTIVATE");

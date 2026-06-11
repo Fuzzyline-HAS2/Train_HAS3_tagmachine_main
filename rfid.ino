@@ -1,7 +1,19 @@
+char FixedRoleFromTag(String tagUser)
+{
+  if (tagUser == "G2P1") return 'T';
+  if (tagUser == "G2P2") return 'P';
+  if (tagUser == "G9P1") return 'T';
+  if (tagUser == "G9P2") return 'G';
+  if (tagUser == "G9P3" || tagUser == "G9P4" ||
+      tagUser == "G9P5" || tagUser == "G9P6" ||
+      tagUser == "G9P7" || tagUser == "G9P8") return 'P';
+  return '\0';
+}
+
 void CheckingPlayers(String tagUser)
 {
   // 태그 인식 2단계 흐름:
-  //   1단계 (loginDone=false): 처음 태그 → 서버에서 역할 확인 후 Login() 호출
+  //   1단계 (loginDone=false): 처음 태그 → 고정 태그 목록에서 역할 확인 후 Login() 호출
   //   2단계 (loginDone=true) : 같은 카드 재태그 → 타이머 진행 중임을 확인
   //                            다른 카드가 태그되면 → ptrRfidFail() 호출 (실패 처리)
   DebugSerial.println("tag_user_data : " + tagUser);
@@ -12,23 +24,17 @@ void CheckingPlayers(String tagUser)
   } else {
     if (loginDone == false)
     {
-      has2wifi.Receive(tagUser); // 서버에서 이 카드의 role 가져옴
-      if ((String)(const char *)tag["role"] == "player") {
-        DebugSerial.println("Player Tagged");
-        loginRole = 'P';
-        if (ptrRfidMode != nullptr) ptrRfidMode('P');
-      } else if ((String)(const char *)tag["role"] == "tagger") {
-        DebugSerial.println("Tagger Tagged");
-        loginRole = 'T';
-        if (ptrRfidMode != nullptr) ptrRfidMode('T');
-      } else if ((String)(const char *)tag["role"] == "ghost" ||
-                 (String)(const char *)tag["role"] == "revival") {
-        DebugSerial.println("Ghost Tagged");
-        loginRole = 'G';
-        if (ptrRfidMode != nullptr) ptrRfidMode('G');
-      } else {
-        DebugSerial.println("Wrong TAG");
+      char fixedRole = FixedRoleFromTag(tagUser);
+      if (fixedRole == '\0') {
+        DebugSerial.println("Unknown fixed tag ignored");
+        return;
       }
+
+      loginRole = fixedRole;
+      if (fixedRole == 'P') DebugSerial.println("Fixed Player Tagged");
+      else if (fixedRole == 'T') DebugSerial.println("Fixed Tagger Tagged");
+      else if (fixedRole == 'G') DebugSerial.println("Fixed Ghost Tagged");
+      if (ptrRfidMode != nullptr) ptrRfidMode(fixedRole);
     } else {
       if (strLastTagUser == tagUser) { // 같은 카드 재태그 → 타이머 계속 진행
         DebugSerial.println("LoginRole: " + String(loginRole));
