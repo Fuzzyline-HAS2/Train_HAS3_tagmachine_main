@@ -71,6 +71,7 @@ volatile int taggerUnlockTime = 15;
 volatile int ghostOpenTime = 15;
 void WhichTagged();
 void DoorOpen();
+void TaggerDeviceState();
 void NewbieOpenBody(int neoColor);
 void NewbiePlayerOpen();
 void NewbieGhostOpen();

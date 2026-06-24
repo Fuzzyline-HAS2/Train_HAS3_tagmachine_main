@@ -41,6 +41,9 @@ void DataChanged()
         if(loginDone) QueuePendingDeviceState(deviceState);
         else ApplyDeviceState(deviceState);
     }
+    else if(deviceState == "tagger"){
+        TaggerDeviceState();
+    }
     else if(deviceState == "github"){
         ota.check();
     }
