@@ -31,8 +31,8 @@ void TaggerDeviceState(){
     AllNeoOn(PURPLE);                                // 네오픽셀 보라색
     digitalWrite(RELAY_PIN, HIGH);                   // 자동문 열림(이 장치는 HIGH=열림)
 
-    // tagger 동안에는 침입 알람음을 재생하지 않고 10초만 유지(이 동안 태그 무시).
-    delay(10000);
+    // tagger 동안에는 침입 알람음을 재생하지 않고 20초만 유지(이 동안 태그 무시).
+    delay(20000);
 
     DebugSerial.println("[TAGGER] end, restore=" + savedState);
 
