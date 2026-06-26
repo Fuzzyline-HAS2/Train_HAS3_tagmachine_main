@@ -152,17 +152,17 @@ enum {
   BLUE3
 };
 // Neopixel 색상정보
-int color[11][3] = {{255, 255, 255}, // WHITE
-                    {255, 0,   0  }, // RED
-                    {255, 255, 0  }, // YELLOW
-                    {0,   255, 0  }, // GREEN
-                    {0,   0,   255}, // BLUE
-                    {255, 0,   255}, // PURPLE
+int color[11][3] = {{100, 100, 100}, // WHITE
+                    {100, 0,   0  }, // RED
+                    {100, 100, 0  }, // YELLOW
+                    {0,   100, 0  }, // GREEN
+                    {0,   0,   100}, // BLUE
+                    {100, 0,   100}, // PURPLE
                     {0,   0,   0  }, // BLACK
                     {0,   0,   64 }, // ENCODERBLUE0
                     {0,   0,   128}, // ENCODERBLUE1
                     {0,   0,   192}, // ENCODERBLUE2
-                    {0,   0,   255}}; // ENCODERBLUE3
+                    {0,   0,   100}}; // ENCODERBLUE3
 
 #define DEFAULT_BRIGHTNESS 50
 int ledBrightness = DEFAULT_BRIGHTNESS;
