@@ -22,7 +22,7 @@ void setup() {
     Mp3_Setup();
     pinMode(RELAY_PIN, OUTPUT);
 //  has2wifi.Setup("city");
-    has2wifi.Setup("badland_auto", "Code3824@");
+    has2wifi.Setup("badland");
     DebugSerial.printf("MAC: %s\r\n", WiFi.macAddress().c_str());
     TelnetInit();
     ota.setLogStream(DebugSerial);
