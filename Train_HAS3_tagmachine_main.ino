@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 17
+#define FIRMWARE_VER 19
 #define PARTITION_VER 1
 #include "Train_HAS3_tagmachine_main.h"
 
@@ -22,7 +22,7 @@ void setup() {
     Mp3_Setup();
     pinMode(RELAY_PIN, OUTPUT);
 //  has2wifi.Setup("city");
-    has2wifi.Setup("badland");
+    has2wifi.Setup("badland_shoot", "Code3824@");
     DebugSerial.printf("MAC: %s\r\n", WiFi.macAddress().c_str());
     TelnetInit();
     ota.setLogStream(DebugSerial);
