@@ -21,33 +21,6 @@ void DoorOpen(){
     digitalWrite(RELAY_PIN, LOW);
 }
 
-void TaggerDeviceState(){
-    // 서버에서 device_state="tagger"를 받으면 호출.
-    // 현재 state를 기억 → 보라색/문 열림으로 10초 유지(블로킹이라 RFID 폴링이 멈춰
-    // 술래/생존자/유령 태그가 무시됨) → 문 닫고 기억해둔 state로 복귀.
-    String savedState = strCurState;                 // 지금 state 기억
-    DebugSerial.println("[TAGGER] start, saved=" + savedState);
-
-    AllNeoOn(PURPLE);                                // 네오픽셀 보라색
-    digitalWrite(RELAY_PIN, HIGH);                   // 자동문 열림(이 장치는 HIGH=열림)
-
-    // tagger 동안에는 침입 알람음을 재생하지 않고 20초만 유지(이 동안 태그 무시).
-    delay(20000);
-
-    DebugSerial.println("[TAGGER] end, restore=" + savedState);
-
-    // 서버 device_state를 이전 값으로 되돌리고 로컬 상태/연출 복원
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", savedState);
-    if (savedState == "lock" || savedState == "activate" || savedState == "debuff")
-        ApplyDeviceState(savedState);                // 기억해둔 state로 복귀(연출 포함)
-    else
-        strCurState = savedState;
-
-    // 상태 복원 이후에 강제로 자동문을 닫아, tagger가 끝나면
-    // 항상 닫힌 상태가 되도록 보장(이 장치는 LOW=닫힘).
-    digitalWrite(RELAY_PIN, LOW);                    // 자동문 닫힘
-}
-
 void GhostDoorOpen(){
     // 유령/뉴비 전용 열림. 문을 잠깐 열었다가 닫기만 함.
     // DoorOpen()과 달리 서버 상태를 activate로 바꾸지 않음.

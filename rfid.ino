@@ -38,10 +38,19 @@ void CheckingPlayers(String tagUser)
     } else {
       if (strLastTagUser == tagUser) { // 같은 카드 재태그 → 타이머 계속 진행
         DebugSerial.println("LoginRole: " + String(loginRole));
+        tagMismatchCount = 0;  // 정상 읽기 → 불일치 카운터 리셋
         if (ptrRfidMode != nullptr) ptrRfidMode(loginRole);
       } else {                         // 다른 카드 감지 → 실패 처리
-        DebugSerial.println("Different TAG deteced");
-        if (ptrRfidFail != nullptr) ptrRfidFail();
+        // 단발성 불일치는 시리얼 손상(예: G1P4→1P4) 오판일 가능성이 높으므로 무시.
+        // 3회 연속 불일치일 때만 실제 다른 카드로 판단해 fail 처리.
+        tagMismatchCount++;
+        if (tagMismatchCount >= 3) {
+            Serial.println("Different TAG deteced (x3)");
+            tagMismatchCount = 0;
+            if (ptrRfidFail != nullptr) ptrRfidFail();
+        } else {
+            Serial.println("Mismatch ignored (transient)");
+        }
       }
     }
     strLastTagUser = tagUser;
@@ -52,6 +61,7 @@ void Login(char role) {
   // 첫 번째 태그 성공 시 호출. loginDone=true로 이후 태그를 2단계로 전환.
   // 1초 간격 GameTimer를 시작하고 LoginTimerSelector()로 역할별 타이머 함수를 지정.
   // WifiTimer를 끄는 이유: 게임 진행 중 WiFi 수신 인터럽트로 상태가 흔들리는 것 방지.
+  tagMismatchCount = 0;  // 새 로그인 시작 시 불일치 카운터 초기화
   DebugSerial.println("LOGIN");
   loginDone = true;
   lightColor(pixels[ROUND], color[BLACK]);
@@ -106,6 +116,13 @@ void LoginTimerSelector(char role) {
       ptrRfidFail  = isNewbie ? NewbieTaggerFail : UnlockFail;
       ptrRfidMode  = WaitRfid;
     }
+  } else if ((String)(const char *)my["device_state"] == "tagger") {
+    if (role == 'P' || role == 'G') {
+      NeoBlink(ROUND, RED, 3, 400);
+    }
+    AllNeoOn(PURPLE);
+    ReturnNormalState();
+    // RELAY_PIN HIGH 유지 — tagger 상태 동안 도어는 계속 열려 있음
   } else if ((String)(const char *)my["device_state"] == "debuff") {
     AllNeoOn(PURPLE);
     if (role == 'P') {
@@ -164,7 +181,7 @@ void NewbieTaggerFail() {
   } else {
     Mp3PlayLargeFolder(1, VD6);
     DebugSerial.println("Unlock Fail Door Shut");
-    NeoBlink(ROUND, RED, 5, 500);
+    NeoBlink(ROUND, RED, 2, 150);
     AllNeoOn(GREEN);
     ReturnNormalState();
     ptrRfidMode = Login;
@@ -201,7 +218,7 @@ void UnlockFail() {
   } else {
     Mp3PlayLargeFolder(1, VD6);
     DebugSerial.println("Unlock Fail Door Shut");
-    NeoBlink(ROUND, RED, 5, 500);
+    NeoBlink(ROUND, RED, 2, 150);
     AllNeoOn(GREEN);
     ReturnNormalState();
   }
@@ -228,7 +245,7 @@ void GhostOpenFailUnlock() {
   // 유령이 activate 상태에서 잠금 시도 실패. YELLOW(activate 색상) 유지하며 복귀.
   Mp3PlayLargeFolder(1, VD6);
   DebugSerial.println("Ghost Door OpenFail");
-  NeoBlink(ROUND, RED, 5, 500);
+  NeoBlink(ROUND, RED, 2, 150);
   AllNeoOn(YELLOW);
   ReturnNormalState();
 }
@@ -237,7 +254,7 @@ void GhostOpenFailLock() {
   // 유령이 lock 상태에서 잠금해제 시도 실패. GREEN(lock 색상) 유지하며 복귀.
   Mp3PlayLargeFolder(1, VD6);
   DebugSerial.println("Unlock Fail Door Shut");
-  NeoBlink(ROUND, RED, 5, 500);
+  NeoBlink(ROUND, RED, 2, 150);
   AllNeoOn(GREEN);
   ReturnNormalState();
 }

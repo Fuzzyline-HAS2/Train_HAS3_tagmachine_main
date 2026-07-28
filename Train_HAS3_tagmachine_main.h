@@ -71,7 +71,6 @@ volatile int taggerUnlockTime = 15;
 volatile int ghostOpenTime = 15;
 void WhichTagged();
 void DoorOpen();
-void TaggerDeviceState();
 void NewbieOpenBody(int neoColor);
 void NewbiePlayerOpen();
 void NewbieGhostOpen();
@@ -199,4 +198,5 @@ void WaitRfid(char role);
 bool loginDone = false; // 처음 로그인 하면 true로 바뀌어서 wifi 안쓰게하기위함
 char loginRole = 'P'; // 처음 로그인 하고 나면 role 저장용.
 String strLastTagUser = "";
+int tagMismatchCount = 0; // 진행 중 연속 카드 불일치 횟수(시리얼 손상 오판 방지용)
 #endif

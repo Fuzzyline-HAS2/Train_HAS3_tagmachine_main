@@ -63,6 +63,8 @@ void CancelTagProgress(){
     ptrRfidMode = Login;
     ptrRfidFail = WaitFunc;
 
+    WifiTimer.deleteTimer(wifiTimerId);
+    wifiTimerId = WifiTimer.setInterval(2000, WifiIntervalFunc);
     SubSerialFlush();
     MainSerialFlush();
     DebugSerial.println("Cancel Tag Progress");
@@ -144,9 +146,11 @@ void PlayerUnlockSuccess() {
 }
 
 // 성공 시 문을 열었다 즉시 lock으로 복귀 (뉴비 모드).
+// 뉴비 모드는 역할 무관 항상 "도어 오픈"(VD1)만 재생 — VD7(잠금 해제)을 쓰면
+// NewbieOpenBody의 VD1 명령이 DFPlayer에서 드랍될 때 VD7이 끝까지 들리는 문제가 있었음.
 void NewbiePlayerSuccess() {
     DebugSerial.println("DOOR UNLOCK (Newbie Player)!");
-    Mp3PlayLargeFolder(1, VD7);
+    Mp3PlayLargeFolder(1, VD1);
     NewbiePlayerOpen();
 }
 
@@ -201,10 +205,11 @@ void NewbieTaggerSuccess() {
 void TaggerUnlockTimerBody(void (*onSuccess)(), bool withSound) {
     gameTimerCnt++;
     RoundNeoToggle(PURPLE, gameTimerCnt);
+    LineNeoDown(PURPLE, GREEN, map(gameTimerCnt, 0, taggerUnlockTime, 0, NumPixels[LINE]));
+    // NeoPixel show() 모두 끝낸 뒤 오디오(SoftwareSerial) 호출 → 인터럽트 충돌 회피
     // 3틱마다 침입 시도 효과음, 마지막 2틱 전까지만 재생(끝에서 짤리지 않도록)
     if (withSound && gameTimerCnt%3 == 1 && gameTimerCnt < (taggerUnlockTime - 2))
         Mp3PlayLargeFolder(1, VD10);
-    LineNeoDown(PURPLE, GREEN, map(gameTimerCnt, 0, taggerUnlockTime, 0, NumPixels[LINE]));
     if (gameTimerCnt > taggerUnlockTime) {
         has2wifi.ReceiveMine();
         DataChanged();
