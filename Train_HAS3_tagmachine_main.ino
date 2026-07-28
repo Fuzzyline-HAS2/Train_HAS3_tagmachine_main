@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 22
+#define FIRMWARE_VER 23
 #define PARTITION_VER 1
 #include "Train_HAS3_tagmachine_main.h"
 #include <esp_task_wdt.h>
@@ -68,11 +68,11 @@ void setup() {
     }
     esp_task_wdt_deinit();
     {
-        esp_task_wdt_config_t wdt_cfg = { .timeout_ms = 12000, .idle_core_mask = 0, .trigger_panic = true };
+        esp_task_wdt_config_t wdt_cfg = { .timeout_ms = 20000, .idle_core_mask = 0, .trigger_panic = true };
         esp_task_wdt_init(&wdt_cfg);
     }
     esp_task_wdt_add(NULL);
-    DebugSerial.println("[WDT] 12s watchdog started");
+    DebugSerial.println("[WDT] 20s watchdog started");
 }
 void loop() {
     esp_task_wdt_reset();
