@@ -42,7 +42,7 @@ void DataChanged()
         else ApplyDeviceState(deviceState);
     }
     else if(deviceState == "tagger"){
-        TaggerDeviceState();
+        ApplyDeviceState("tagger");
     }
     else if(deviceState == "github"){
         ota.check();
@@ -79,6 +79,7 @@ void ApplyPendingDeviceState() {
 void ApplyDeviceState(String deviceState) {
     if(deviceState == "lock"){
       strCurState = "lock";
+      digitalWrite(RELAY_PIN, LOW); // 봉쇄(tagger) 등 문이 열린 상태에서 lock으로 복귀 시 문 닫힘 보장
       AllNeoOn(GREEN);
     }
     else if(deviceState == "activate"){
@@ -96,6 +97,20 @@ void ApplyDeviceState(String deviceState) {
         debuffTimerId = DebuffTimer.setInterval(60000,DebuffTimerFunc);
         ReturnNormalState();
     }
+    else if(deviceState == "tagger"){
+        pendingDeviceState = "";
+        pendingDeviceStateApply = false;
+        strCurState = "tagger";
+        AllNeoOn(PURPLE);
+        digitalWrite(RELAY_PIN, HIGH);
+        WifiTimer.deleteTimer(wifiTimerId);
+        wifiTimerId = WifiTimer.setInterval(2000, WifiIntervalFunc);
+        ptrCurrentMode = WhichTagged;
+        ptrRfidMain = CommnunicationMainBeetle;
+        ptrRfidSub = CommnunicationBeetle;
+        ptrRfidMode = Login;
+        ptrRfidFail = WaitFunc;
+    }
 }
 void WaitFunc(){
 
@@ -107,17 +122,12 @@ void SettingFunc(void){
     GameTimer.deleteTimer(gameTimerId);
     WifiTimer.deleteTimer(wifiTimerId);                                          //게임 타이머 종료
     wifiTimerId = WifiTimer.setInterval(2000,WifiIntervalFunc);
-    
+
     AllNeoOn(WHITE);
     digitalWrite(RELAY_PIN, HIGH);
     ptrCurrentMode = WaitFunc;
     ptrRfidMode = WaitRfid;
     GameSetting();
-    has2wifi.Send((String)(const char*)my["device_name"], "game_state", "activate");
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "activate");
-    my["game_state"] = "activate";
-    my["device_state"] = "activate";
-    ActivateFunc();
 }
 void ActivateFunc(void){
     DebugSerial.println("ACTIVATE");
@@ -165,7 +175,8 @@ void GameSetting(){
 }
 void NewbieModeSetting() {
     if ((String)(const char*)my["mode"] == "easy" &&
-        (String)(const char*)my["game_state"] == "activate") {
+        (String)(const char*)my["game_state"] == "activate" &&
+        (String)(const char*)my["device_state"] != "tagger") {  // tagger일 때 NewbieLogin으로 덮어쓰기 방지
         ptrRfidMode = Login;
     }
 }
