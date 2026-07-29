@@ -84,6 +84,7 @@ void RoundNeoEffect(int neocolor)
     pixels[ROUND_SUB].setPixelColor(NumPixels[ROUND]-i,pixels[ROUND_SUB].Color(color[neocolor][0],color[neocolor][1],color[neocolor][2]));
     pixels[ROUND].show();
     pixels[ROUND_SUB].show();
+    esp_task_wdt_reset();
     delay(100);
   }
 }
@@ -97,6 +98,7 @@ void RoundNeoEffectDown(int neocolor)
     pixels[ROUND_SUB].setPixelColor(NumPixels[ROUND]-i,pixels[ROUND_SUB].Color(color[neocolor][0],color[neocolor][1],color[neocolor][2]));
     pixels[ROUND].show();
     pixels[ROUND_SUB].show();
+    esp_task_wdt_reset();
     delay(100);
   }
 }

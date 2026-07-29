@@ -102,8 +102,6 @@ void PlayerLockTimerFunc(){
         Mp3PlayLargeFolder(1, VD11);
     if(gameTimerCnt > (playerLockTime))
     {
-        has2wifi.ReceiveMine();
-        DataChanged();
         if(strCurState != "activate"){
             DebugSerial.println("debuff on");
             CancelTagProgress();
@@ -137,7 +135,7 @@ void PlayerUnlockSuccess() {
     Mp3PlayLargeFolder(1, VD7);
     ReturnNormalState();
     digitalWrite(RELAY_PIN, HIGH);
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    // has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
     RoundNeoEffect(YELLOW);
     DoorOpen();
     has2wifi.ReceiveMine();
@@ -160,8 +158,6 @@ void PlayerUnlockTimerBody(void (*onSuccess)(), bool withSound) {
     LineNeoDown(YELLOW, GREEN, map(gameTimerCnt, 0, playerUnlockTime, 0, NumPixels[LINE]));
     if (gameTimerCnt == 1 && withSound) Mp3PlayLargeFolder(1, VD11);
     if (gameTimerCnt > playerUnlockTime) {
-        has2wifi.ReceiveMine();
-        DataChanged();
         if (strCurState != "lock") { DebugSerial.println("debuff on"); CancelTagProgress(); }
         else { onSuccess(); }
     }
@@ -177,7 +173,7 @@ void TaggerUnlockSuccess() {
     DebugSerial.println("DOOR UNLOCK!");
     ReturnNormalState();
     digitalWrite(RELAY_PIN, HIGH);
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    // has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
     RoundNeoEffect(PURPLE);
     DoorOpen();
     SubSerialFlush();
@@ -191,7 +187,7 @@ void NewbieTaggerSuccess() {
     DebugSerial.println("DOOR UNLOCK (Newbie)!");
     ReturnNormalState();
     digitalWrite(RELAY_PIN, HIGH);
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    // has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
     RoundNeoEffect(PURPLE);
     GhostDoorOpen();
     has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
@@ -211,8 +207,6 @@ void TaggerUnlockTimerBody(void (*onSuccess)(), bool withSound) {
     if (withSound && gameTimerCnt%3 == 1 && gameTimerCnt < (taggerUnlockTime - 2))
         Mp3PlayLargeFolder(1, VD10);
     if (gameTimerCnt > taggerUnlockTime) {
-        has2wifi.ReceiveMine();
-        DataChanged();
         if (strCurState != "lock") { DebugSerial.println("debuff on"); CancelTagProgress(); }
         else { onSuccess(); }
     }
@@ -229,7 +223,7 @@ void GhostUnlockSuccess() {
     DebugSerial.println("GHOST OPEN");
     ReturnNormalState();
     digitalWrite(RELAY_PIN, HIGH);
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    // has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
     RoundNeoEffect(BLUE);
     GhostDoorOpen();
     has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");
@@ -250,8 +244,6 @@ void GhostUnlockTimerBody(void (*onSuccess)()) {
     gameTimerCnt++;
     RoundNeoUp(BLUE, GREEN, map(gameTimerCnt, 0, ghostOpenTime, 0, NumPixels[ROUND]/2));
     if (gameTimerCnt > ghostOpenTime) {
-        has2wifi.ReceiveMine();
-        DataChanged();
         if (strCurState != "lock") { DebugSerial.println("debuff on"); CancelTagProgress(); }
         else { onSuccess(); }
     }
@@ -267,8 +259,6 @@ void GhostLockTimerFunc(){
     RoundNeoUp(BLUE, YELLOW, map(gameTimerCnt,0,ghostOpenTime,0,NumPixels[ROUND]/2));
     if(gameTimerCnt > (ghostOpenTime))
     {
-        has2wifi.ReceiveMine();
-        DataChanged();
         if(strCurState != "activate"){
             DebugSerial.println("debuff on");
             CancelTagProgress();
@@ -278,7 +268,7 @@ void GhostLockTimerFunc(){
             DebugSerial.println("GHOST OPEN");
             ReturnNormalState();
             digitalWrite(RELAY_PIN, HIGH);
-            has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+            // has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
             RoundNeoEffect(BLUE);
             GhostDoorOpen();
             has2wifi.Send((String)(const char*)my["device_name"], "device_state", "activate");

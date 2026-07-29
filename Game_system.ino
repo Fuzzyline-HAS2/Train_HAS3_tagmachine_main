@@ -13,8 +13,10 @@ void DoorOpen(){
         DebugSerial.println("DEBUFF OPEN");
     }
     else{
+        esp_task_wdt_reset();
         has2wifi.Send((String)(const char*)my["device_name"], "device_state", "activate");
         RoundNeoEffectDown(BLACK);
+        esp_task_wdt_reset();
         has2wifi.Loop(DataChanged); // activate 상태 업데이트 수신
         AllNeoOn(YELLOW);
     }
@@ -41,7 +43,7 @@ void NewbieOpenBody(int neoColor) {
     ptrRfidMode = Login;
     Mp3PlayLargeFolder(1, VD1);
     digitalWrite(RELAY_PIN, HIGH);
-    has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
+    // has2wifi.Send((String)(const char*)my["device_name"], "device_state", "open");
     RoundNeoEffect(neoColor);
     GhostDoorOpen();                                                                 // 물리적으로 열었다 닫음
     has2wifi.Send((String)(const char*)my["device_name"], "device_state", "lock");  // 즉시 lock으로 복귀
