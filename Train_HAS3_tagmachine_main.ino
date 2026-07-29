@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 23
+#define FIRMWARE_VER 24
 #define PARTITION_VER 1
 #include "Train_HAS3_tagmachine_main.h"
 #include <esp_task_wdt.h>
