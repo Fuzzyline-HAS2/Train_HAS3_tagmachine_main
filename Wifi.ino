@@ -45,9 +45,7 @@ void DataChanged()
         ApplyDeviceState("tagger");
     }
     else if(deviceState == "github"){
-        esp_task_wdt_delete(NULL);
         ota.check();
-        esp_task_wdt_add(NULL);
     }
   }
   if((String)(const char*)my["device_state"] == "debuff"){ 

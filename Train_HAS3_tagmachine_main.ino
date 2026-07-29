@@ -12,7 +12,6 @@
 #define FIRMWARE_VER 24
 #define PARTITION_VER 1
 #include "Train_HAS3_tagmachine_main.h"
-#include <esp_task_wdt.h>
 
 void setup() {
     DebugSerial.begin(115200);
@@ -20,12 +19,15 @@ void setup() {
     toMainSerial.begin(9600, SERIAL_8N1, MAIN_BEETLE_RX_PIN, MAIN_BEETLE_TX_PIN);
     NeopixelInit();
     TimerInit();
-    Mp3_Setup();
     pinMode(RELAY_PIN, OUTPUT);
+    has2wifi.SetDebugPrint(&DebugSerial);
+    DebugSerial.println("[WIFI] Starting WiFi setup...");
 //  has2wifi.Setup("city");
     has2wifi.Setup("badland_shoot", "Code3824@");
+    DebugSerial.println("[WIFI] WiFi setup done.");
     DebugSerial.printf("MAC: %s\r\n", WiFi.macAddress().c_str());
     TelnetInit();
+    Mp3_Setup();
     ota.setLogStream(DebugSerial);
     ota.setOnSuccess([]() {
         has2wifi.Send((String)(const char*)my["device_name"], "device_state", "setting");
@@ -66,16 +68,8 @@ void setup() {
         ptrCurrentMode = WaitFunc;
         DebugSerial.println("[WARN] ptrCurrentMode was nullptr → set to WaitFunc");
     }
-    esp_task_wdt_deinit();
-    {
-        esp_task_wdt_config_t wdt_cfg = { .timeout_ms = 20000, .idle_core_mask = 0, .trigger_panic = true };
-        esp_task_wdt_init(&wdt_cfg);
-    }
-    esp_task_wdt_add(NULL);
-    DebugSerial.println("[WDT] 20s watchdog started");
 }
 void loop() {
-    esp_task_wdt_reset();
     if (ptrCurrentMode != nullptr) ptrCurrentMode();
     TimerRun();
     TelnetRun();
