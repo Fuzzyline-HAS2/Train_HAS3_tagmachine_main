@@ -13,10 +13,8 @@ void DoorOpen(){
         DebugSerial.println("DEBUFF OPEN");
     }
     else{
-        esp_task_wdt_reset();
         has2wifi.Send((String)(const char*)my["device_name"], "device_state", "activate");
         RoundNeoEffectDown(BLACK);
-        esp_task_wdt_reset();
         has2wifi.Loop(DataChanged); // activate 상태 업데이트 수신
         AllNeoOn(YELLOW);
     }
