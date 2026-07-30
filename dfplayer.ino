@@ -14,7 +14,7 @@ void Mp3_Setup(){
   // 모든 효과음이 안 나오던 문제를 수정.
   bool ok = false;
   for (int i = 0; i < 3 && !ok; i++) {
-    ok = myDFPlayer.begin(MP3Serial);
+    ok = myDFPlayer.begin(MP3Serial, false);
     if (!ok) {
       DebugSerial.println("DFPlayer begin() failed, retrying...");
       delay(200);
