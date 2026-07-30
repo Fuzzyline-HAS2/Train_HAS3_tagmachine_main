@@ -2,6 +2,7 @@
 bool dfPlayerReady = false;
 
 void Mp3_Setup(){
+  pinMode(DFPLAYER_RX_PIN, INPUT); // GPIO 39은 input-only, INPUT_PULLUP 미지원 → SoftwareSerial.begin() 전에 선점
   MP3Serial.begin(9600);
   DebugSerial.println("DFRobot DFPlayer Mini Demo");
   DebugSerial.println("Initializing DFPlayer ... (May take 3~5 seconds)");
