@@ -1,7 +1,5 @@
 char FixedRoleFromTag(String tagUser)
 {
-  if (tagUser == "G2P1") return 'T';
-  if (tagUser == "G2P2") return 'P';
   if (tagUser == "G9P1") return 'T';
   if (tagUser == "G9P2") return 'G';
   if (tagUser == "G9P3" || tagUser == "G9P4" ||
@@ -17,10 +15,8 @@ void CheckingPlayers(String tagUser)
   //   2단계 (loginDone=true) : 같은 카드 재태그 → 타이머 진행 중임을 확인
   //                            다른 카드가 태그되면 → ptrRfidFail() 호출 (실패 처리)
   DebugSerial.println("tag_user_data : " + tagUser);
-  if (tagUser == "MMMM") { // 스태프카드: 릴레이 펄스로 수동 열림
-    digitalWrite(RELAY_PIN, HIGH);
-    delay(500);
-    digitalWrite(RELAY_PIN, LOW);
+  if (tagUser == "MMMM") { // 스태프카드: 현재 릴레이 레벨을 읽어 반대로 토글 (연속 태그는 디바운스)
+    ToggleRelayStaff();
   } else {
     if (loginDone == false)
     {

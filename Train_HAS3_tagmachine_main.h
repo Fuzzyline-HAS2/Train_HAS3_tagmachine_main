@@ -103,6 +103,13 @@ void MainSerialFlush();
 void SendBeetleTag(int idx, const char *field, const String &tagUser);
 enum { BEETLE_SUB = 0, BEETLE_MAIN };
 unsigned long beetleSendLastMs[2] = {0, 0};
+
+// 스태프 카드(MMMM/M 커맨드) 연속 태그 디바운스.
+// 카드가 리더 위에 2~3초 머무는 동안 리더가 짧은 간격으로 계속 읽어 들여보내는데,
+// 이걸 한 번의 태그로 묶어 릴레이가 켜졌다 꺼졌다 반복되는 것을 막는다.
+#define STAFF_TAG_DEBOUNCE_MS 4000
+unsigned long lastStaffTagSeenMs = 0;
+void ToggleRelayStaff();
 HardwareSerial toSubSerial(1);
 HardwareSerial toMainSerial(2);
 bool tagState = false;

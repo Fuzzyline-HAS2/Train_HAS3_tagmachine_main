@@ -1,3 +1,14 @@
+void ToggleRelayStaff(){
+  // 연속으로 들어오는 M 신호 중 첫 번째만 실제 토글로 인정한다.
+  // (읽힘 간격이 STAFF_TAG_DEBOUNCE_MS보다 짧으면 같은 태그가 계속되는 중으로 간주)
+  unsigned long now = millis();
+  bool isNewTap = (lastStaffTagSeenMs == 0) || (now - lastStaffTagSeenMs > STAFF_TAG_DEBOUNCE_MS);
+  lastStaffTagSeenMs = now;
+  if (isNewTap) {
+    digitalWrite(RELAY_PIN, digitalRead(RELAY_PIN) == HIGH ? LOW : HIGH);
+  }
+}
+
 void CommnunicationBeetle(){
   // Serial.println("READ");
   if(toSubSerial.available() > 0){
@@ -13,9 +24,9 @@ void CommnunicationBeetle(){
       DebugSerial.println("Beetle Reset Success");
     }
     else if(command[0] == 'M'){
-      digitalWrite(RELAY_PIN, HIGH);
-      delay(500);
-      digitalWrite(RELAY_PIN, LOW);
+      // 별도 상태 변수 대신, 그 순간 실제 릴레이 레벨을 읽어 반대로 뒤집음
+      // (그 사이 생존자/술래 태그로 문이 열렸다 닫혔다 해도 항상 현재 상태 기준으로 토글됨)
+      ToggleRelayStaff();
     }
     else if(command.length() >= 4){   // NFC 태그 데이터 (4자 이상이면 태그로 처리)
       mainRfidTagged = false;
@@ -70,9 +81,8 @@ void CommnunicationMainBeetle(){
       DebugSerial.println("Main Beetle Reset Success");
     }
     else if(command[0] == 'M'){
-      digitalWrite(RELAY_PIN, HIGH);
-      delay(500);
-      digitalWrite(RELAY_PIN, LOW);
+      // 별도 상태 변수 대신, 그 순간 실제 릴레이 레벨을 읽어 반대로 뒤집음
+      ToggleRelayStaff();
     }
     else if(command.length() >= 4){   // NFC 태그 데이터 (4자 이상)
       mainRfidTagged = true;

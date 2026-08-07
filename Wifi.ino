@@ -1,6 +1,6 @@
 void DataChanged()
 {
-  static StaticJsonDocument<1000> cur;
+  static StaticJsonDocument<2048> cur;
   DebugSerial.println("[DC] device_state=" + (String)(const char*)my["device_state"] +
                       " game_state=" + (String)(const char*)my["game_state"] +
                       " cur_device=" + (String)(const char*)cur["device_state"] +

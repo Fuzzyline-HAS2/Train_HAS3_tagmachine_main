@@ -20,7 +20,28 @@
       "Bash(git mv *)",
       "Bash(sed -i \"s/#ifndef _UPDATED_TAGMACHINE_MAIN_/#ifndef _TRAIN_HAS3_TAGMACHINE_MAIN_/\" Train_HAS3_tagmachine_main.h)",
       "Bash(sed -i \"s/#define _UPDATED_TAGMACHINE_MAIN_/#define _TRAIN_HAS3_TAGMACHINE_MAIN_/\" Train_HAS3_tagmachine_main.h)",
-      "Bash(sed -i 's/#include \"updated_tagmachine_main.h\"/#include \"Train_HAS3_tagmachine_main.h\"/' Train_HAS3_tagmachine_main.ino)"
+      "Bash(sed -i 's/#include \"updated_tagmachine_main.h\"/#include \"Train_HAS3_tagmachine_main.h\"/' Train_HAS3_tagmachine_main.ino)",
+      "PowerShell(arduino-cli *)",
+      "PowerShell(Get-ChildItem *)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\" compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --build-path \"$env:TEMP\\\\itembox_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_itembox\" 2>&1 | Select-Object -Last 25)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\" compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --build-path \"$env:TEMP\\\\itembox_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_itembox\" 2>&1 | Select-String -Pattern \"error|에러|오류\" -Context 2,2 | Select-Object -First 30)",
+      "PowerShell(New-Item *)",
+      "PowerShell($cli = \"$env:LOCALAPPDATA\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\"; & $cli compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --libraries \"$env:TEMP\\\\itembox_libs\" --build-path \"$env:TEMP\\\\itembox_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_itembox\" 2>&1 | Select-String -Pattern \"undefined|multiple definition|collect2\" -Context 1,1 | Select-Object -First 15)",
+      "PowerShell($cli = \"$env:LOCALAPPDATA\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\"; & $cli compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --libraries \"$env:TEMP\\\\itembox_libs\" --build-path \"C:\\\\Temp\\\\itembox_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_itembox\" 2>&1 | Select-String -Pattern \"ld.exe|undefined|multiple definition\" -Context 0,2 | Select-Object -First 10)",
+      "PowerShell(git *)",
+      "PowerShell($cli = \"$env:LOCALAPPDATA\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\"; $tmpLibs = \"$env:TEMP\\\\itembox_libs\"; if \\(-not \\(Test-Path \"$tmpLibs\\\\SecureOTA\"\\)\\) { New-Item -ItemType Directory -Force $tmpLibs | Out-Null; New-Item -ItemType Junction -Path \"$tmpLibs\\\\SecureOTA\" -Target \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\SecureOTA\" | Out-Null }; & $cli compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --libraries $tmpLibs --build-path \"C:\\\\Temp\\\\itembox_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_itembox\" 2>&1 | Select-String -Pattern \"error\" | Select-Object -First 10; Get-ChildItem \"C:\\\\Temp\\\\itembox_build\\\\sketch\\\\Train_HAS3_itembox.ino.cpp.o\" | Select-Object Name, LastWriteTime)",
+      "PowerShell(& \"C:\\\\Users\\\\이효주\\\\AppData\\\\Local\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\" compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --build-path \"C:\\\\Temp\\\\has3_tagmachine_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_tagmachine_main\")",
+      "PowerShell(Glob-nothing *)",
+      "PowerShell(& \"C:\\\\Users\\\\이효주\\\\AppData\\\\Local\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\" compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --libraries \"C:\\\\Temp\\\\ota_libs\" --build-path \"C:\\\\Temp\\\\has3_tagmachine_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_tagmachine_main\")",
+      "PowerShell(if \\(Test-Path \"$env:TEMP\\\\arduino_libs_ascii\"\\) { ls \"$env:TEMP\\\\arduino_libs_ascii\" }; if \\(Test-Path \"C:\\\\Temp\"\\) { ls \"C:\\\\Temp\" | Select-Object -First 20 })",
+      "Bash(xargs -I{} sh -c 'echo === {} ===; cat {}')",
+      "Bash(curl -s -m 5 -o /dev/null -w \"HTTP_STATUS:%{http_code} TIME:%{time_total}s\\\\n\" \"http://172.30.1.43/has2.php\")",
+      "Bash(echo \"---exit:$?---\")",
+      "PowerShell(netsh wlan *)",
+      "Bash(curl -s -m 5 \"http://172.30.1.20/has2.php\" -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(curl -s -m 5 \"http://172.30.1.20/has2.php?request=Loop&table=device&mac=test\" -w \"\\\\nHTTP_STATUS:%{http_code}\\\\n\")",
+      "Bash(curl *)",
+      "Bash(\"C:\\\\Users\\\\이효주\\\\AppData\\\\Local\\\\Programs\\\\Arduino IDE\\\\resources\\\\app\\\\lib\\\\backend\\\\resources\\\\arduino-cli.exe\" compile --fqbn esp32:esp32:ttgo-t1 --libraries \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\libraries\" --build-path \"C:\\\\Temp\\\\has3_tagmachine_build\" \"C:\\\\Users\\\\이효주\\\\Hide_and_Seek\\\\Train_HAS3_tagmachine_main\")"
     ]
   }
 }
