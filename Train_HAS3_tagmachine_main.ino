@@ -9,7 +9,7 @@
  *
  */
 
-#define FIRMWARE_VER 28
+#define FIRMWARE_VER 29
 #define PARTITION_VER 1
 #include "Train_HAS3_tagmachine_main.h"
 
@@ -23,7 +23,7 @@ void setup() {
     has2wifi.SetDebugPrint(&DebugSerial);
     DebugSerial.println("[WIFI] Starting WiFi setup...");
 //  has2wifi.Setup("city");
-    has2wifi.Setup("badland_shoot", "Code3824@");
+    has2wifi.Setup("academy", "Code3824@");
     DebugSerial.println("[WIFI] WiFi setup done.");
     DebugSerial.printf("MAC: %s\r\n", WiFi.macAddress().c_str());
     TelnetInit();
